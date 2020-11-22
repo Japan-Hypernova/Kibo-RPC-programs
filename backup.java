@@ -23,6 +23,7 @@ import static org.opencv.core.CvType.CV_64F;
 public class YourService extends KiboRpcService {
     @Override
     protected void runPlan1(){
+        //U1 P2付近から移動開始するプログラム
         api.judgeSendStart();
         moveToWrapper(10.83, -8.21, 5.27,0, 0, 0.707, -0.707);
         double airlock_center_x = 10.9924;
@@ -35,6 +36,7 @@ public class YourService extends KiboRpcService {
     }
     @Override
     protected void runPlan2(){
+        //U2 P3手前から移動開始するプログラム
         api.judgeSendStart();
         double airlock_center_x = 10.9924;
         double airlock_center_y = -10.1;
@@ -45,6 +47,7 @@ public class YourService extends KiboRpcService {
         api.judgeSendFinishISS();
     }
     private void getARmarker(double[] current_pos){
+        //ARマーカーの取得からレーザーの照射まで
         int loop_count = 0;
         boolean isSucceeded;
         do{
@@ -66,6 +69,7 @@ public class YourService extends KiboRpcService {
         } while(!isSucceeded && loop_count < 50);
     }
     private Bitmap undistortImage(Bitmap input_bitmap){
+        //撮影した画像の歪み補正
         Mat input_mat = new Mat();
         bitmapToMat(input_bitmap,input_mat);
         double[] camera_matrix = {692.827528, 0.000000, 571.399891, 0.000000, 691.919547, 504.956891, 0.000000, 0.000000, 1.000000};
@@ -99,6 +103,7 @@ public class YourService extends KiboRpcService {
         return output_bitmap;
     }
     private double[] calcTargetQuaternion(double[] current_pos,double ar_pixel_x,double ar_pixel_z){
+        //ターゲットの姿勢を算出する
         double nav_center_x = 640;
         double nav_center_z = 480;
         double current_position_y = current_pos[1];
@@ -129,6 +134,7 @@ public class YourService extends KiboRpcService {
         return ans;
     }
     private boolean readARmarker(Bitmap bitmap,double[] current_pos, boolean needSend) {
+        //ARマーカーの読み取り
         bitmap = undistortImage(bitmap);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -163,6 +169,7 @@ public class YourService extends KiboRpcService {
     private void moveToWrapper(double pos_x,double pos_y,double pos_z,
                                double qua_x,double qua_y,double qua_z,
                                double qua_w){
+        //指定した座標に移動させる
         final int LOOP_MAX = 20;
         final Point point = new Point(pos_x,pos_y,pos_z);
         final Quaternion quaternion = new Quaternion((float)qua_x,(float)qua_y,
@@ -187,6 +194,7 @@ public class YourService extends KiboRpcService {
     private void relativeMoveToWrapper(double pos_x,double pos_y,double pos_z,
                                        double qua_x,double qua_y,double qua_z,
                                        double qua_w){
+        //指定した相対的な座標に移動させる
         final int LOOP_MAX = 20;
         final Point point = new Point(pos_x,pos_y,pos_z);
         final Quaternion quaternion = new Quaternion((float)qua_x,(float)qua_y,
@@ -199,12 +207,14 @@ public class YourService extends KiboRpcService {
         }while(!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
     private void sleep(int millis){
+        //Astrobeeを停止させる
         try {
             Thread.sleep(millis);
         }catch(InterruptedException e){
         }
     }
     private Point getPositionWrapper(double def_pos_x,double def_pos_y,double def_pos_z){
+        //現在位置を取得する
         int timeout_sec = 10;
         Kinematics kinematics = api.getTrustedRobotKinematics(timeout_sec);
         Point ans_point = null;
