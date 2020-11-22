@@ -60,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int RESULT_PICK_IMAGE = 1000;
     private ImageView imageView;
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        //読み込み時のエラー対策？
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     };
     public void onResume()
     {
+        //エラーハンドリング
         super.onResume();
         if (!OpenCVLoader.initDebug()) {
             Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
@@ -88,12 +90,14 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //メイン関数
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         imageView = (ImageView)findViewById(R.id.imageView);
         findViewById(R.id.button).setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                //メイン画面でボタンが押されたときに、画像を読み込む
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("image/*");
@@ -105,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        //画像を読み込んだあとの処理
         super.onActivityResult(requestCode, resultCode, resultData);
         if (requestCode == RESULT_PICK_IMAGE && resultCode == RESULT_OK) {
             Uri uri = null;
@@ -137,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private String readQRcode_mat(Mat QR_mat){
+        //QRコードを読み取ってみる
         String result = "error";
         QR_mat = trimMat(QR_mat,0.4);
         QR_mat = resizeMat(QR_mat,0.6);
@@ -166,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Mat resizeMat(Mat input_mat,double rate){
+        //Mat型の画像のリサイズを行う
         int width = input_mat.width();
         int height = input_mat.height();
         Size new_size = new Size(width * rate,height * rate);
@@ -174,6 +181,7 @@ public class MainActivity extends AppCompatActivity {
         return output_mat;
     }
     private Mat trimMat(Mat input_mat,double rate){
+        //画像の切り取りを行う
         int width = input_mat.width();
         int height = input_mat.height();
         int new_width = (int) (width * rate);
@@ -184,6 +192,7 @@ public class MainActivity extends AppCompatActivity {
         return new Mat(input_mat,roi);
     }
     private double[] undistortPoint(double x,double y){
+        //UndistortPointを使って歪み補正を試みる
         double camera_matrix[] = {344.173397, 0.000000, 630.793795,
                 0.000000, 344.277922, 487.033834,
                 0.000000, 0.000000, 1.000000};//重要！重要！重要！
@@ -233,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
         return  output_array;
     }
     private Mat undistortImage(Mat input_mat){
+        //画像の歪みを補正する（パラメーターはシミュレーションのNavCam）
         double camera_matrix[] = {344.173397, 0.000000, 630.793795,
                 0.000000, 344.277922, 487.033834,
                 0.000000, 0.000000, 1.000000};//重要！重要！重要！
@@ -290,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
         return undistorted_mat;
     }
     private org.opencv.core.Point color_detect2(Bitmap bmp){
+        //緑色を検出するプログラムの実験 改良版
         Mat mat1 = new Mat();
         Mat mat2 = new Mat();
         Mat mat_gray = new Mat();
@@ -325,6 +336,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private Bitmap color_detect(Bitmap bmp){
+        //緑色を検出するプログラムを書いてみる
+
         Mat mat1 = new Mat();
         Mat mat2 = new Mat();
         Mat mat_gray = new Mat();
@@ -362,6 +375,7 @@ public class MainActivity extends AppCompatActivity {
         return bmp;
     }
     private Bitmap fishEye(Bitmap bmp){
+        //魚眼レンズの補正に当てはめられるかを確認。上手く行かなかった。
         Mat camera_param = new Mat(3,3,CV_64F);
         Mat distortion_param = new Mat(5,1,CV_64F);
         Mat mat = new Mat();
@@ -391,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         return bmp;
     }
     private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        //Bitmap型の画像を取得する
         ParcelFileDescriptor parcelFileDescriptor =
                 getContentResolver().openFileDescriptor(uri, "r");
         FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
@@ -399,6 +414,7 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
     private void readARmarker(Bitmap bitmap){
+        //ARマーカーの読み取りを確認
         Mat mat = new Mat();
         bitmapToMat(bitmap,mat,false);
         Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_5X5_250);
