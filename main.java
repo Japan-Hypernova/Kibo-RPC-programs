@@ -62,7 +62,7 @@ public class YourService extends KiboRpcService {
     
     private void getARmarker(double[] current_pos){
         //ARマーカーの取得から、レーザーの照射まで
-        //Initiate AR tag detection and scanning
+        //Initiating the detection and scanning of AR tag
         int loop_count = 0;
         boolean isSucceeded;
         do{
@@ -77,6 +77,7 @@ public class YourService extends KiboRpcService {
             relativeMoveToWrapper(0,0, 0, 0, 0, 0.707, -0.707);
             api.flashlightControlFront(0.025f);
             sleep(2000);
+            //Below is the laser irradiation program
             Bitmap bitmap = api.getBitmapNavCam();
             api.flashlightControlFront(0);
             isSucceeded = readARmarker(bitmap,current_pos,true);
@@ -87,7 +88,7 @@ public class YourService extends KiboRpcService {
     
     private Bitmap undistortImage(Bitmap input_bitmap){
         //撮影した画像の歪み補正
-        //Undistortion
+        //Undistorting NavCam for the laser irradation program
         Mat input_mat = new Mat();
         bitmapToMat(input_bitmap,input_mat);
         double camera_matrix[] = {692.827528, 0.000000, 571.399891, 0.000000, 691.919547, 504.956891, 0.000000, 0.000000, 1.000000};
@@ -194,7 +195,7 @@ public class YourService extends KiboRpcService {
     
     private void getQRcode(int QR_num){
         //QRコードへの移動と読み取り
-        //Initiate QR code detection and scanning
+        //Initiating the detection and scanning of QR code
         int loop_count = 0;
         String QRcodeString = "error";
         while(QRcodeString.equals("error") && loop_count < 20){
@@ -265,7 +266,7 @@ public class YourService extends KiboRpcService {
                                double qua_x,double qua_y,double qua_z,
                                double qua_w){
         //指定した座標に移動させる
-        //Move and orientate Astrobee to a specific coordinate and quaternion
+        //Moving and orientating Astrobee according to the coordinates and quaternions inputted above
         final int LOOP_MAX = 20;
         final Point point = new Point(pos_x,pos_y,pos_z);
         final Quaternion quaternion = new Quaternion((float)qua_x,(float)qua_y,
@@ -291,7 +292,7 @@ public class YourService extends KiboRpcService {
     
     private void moveToQR(int QR_num) {
         //指定したQRコードに移動させる
-        //Move Astrobee to the QR code
+        //Moving Astrobee to the QR code
         double pos_table[][] = {{10.71, -5.59, 4.52, 0, 0, 1, 0},
                 {11.16, -7.98, 5.47, 0.5, 0.5, -0.5, 0.5}};
         Point point = new Point(pos_table[QR_num][0], pos_table[QR_num][1], pos_table[QR_num][2]);
