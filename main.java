@@ -2,7 +2,6 @@ package jp.jaxa.iss.kibo.rpc.japan;
 
 //ライブラリ
 //Libraries
-import android.graphics.Bitmap;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.LuminanceSource;
@@ -36,6 +35,7 @@ import gov.nasa.arc.astrobee.types.Quaternion;
 import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
 
 import static android.graphics.Bitmap.createBitmap;
+import android.graphics.Bitmap;
 
 public class YourService extends KiboRpcService {
     
