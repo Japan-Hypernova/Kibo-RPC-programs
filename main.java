@@ -1,4 +1,7 @@
 package jp.jaxa.iss.kibo.rpc.japan;
+
+//ライブラリ
+//Libraries
 import android.graphics.Bitmap;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -7,6 +10,7 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Reader;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
@@ -14,25 +18,32 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import static org.opencv.android.Utils.bitmapToMat;
+import static org.opencv.android.Utils.matToBitmap;
+import static org.opencv.core.CvType.CV_32FC1;
+import static org.opencv.core.CvType.CV_64F;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+
 import gov.nasa.arc.astrobee.Kinematics;
 import gov.nasa.arc.astrobee.Result;
 import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
+
 import static android.graphics.Bitmap.createBitmap;
-import static org.opencv.android.Utils.bitmapToMat;
-import static org.opencv.android.Utils.matToBitmap;
-import static org.opencv.core.CvType.CV_32FC1;
-import static org.opencv.core.CvType.CV_64F;
+
 public class YourService extends KiboRpcService {
+    
+    
     @Override
     protected void runPlan1(){
         //メイン
+        //Main commands
         api.judgeSendStart();
         getQRcode(0);
         moveToWrapper(10.71, -5.9, 4.641, 0.13, 0.13, 0.81, -0.55);
@@ -47,8 +58,11 @@ public class YourService extends KiboRpcService {
         getARmarker(current_pos);
         api.judgeSendFinishISS();
     }
+    
+    
     private void getARmarker(double[] current_pos){
         //ARマーカーの取得から、レーザーの照射まで
+        //Initiate AR tag detection and scanning
         int loop_count = 0;
         boolean isSucceeded;
         do{
@@ -69,8 +83,11 @@ public class YourService extends KiboRpcService {
             loop_count ++;
         } while(!isSucceeded && loop_count < 50);
     }
+    
+    
     private Bitmap undistortImage(Bitmap input_bitmap){
         //撮影した画像の歪み補正
+        //Undistortion
         Mat input_mat = new Mat();
         bitmapToMat(input_bitmap,input_mat);
         double camera_matrix[] = {692.827528, 0.000000, 571.399891, 0.000000, 691.919547, 504.956891, 0.000000, 0.000000, 1.000000};
@@ -103,8 +120,11 @@ public class YourService extends KiboRpcService {
         matToBitmap(undistorted_mat,output_bitmap);
         return output_bitmap;
     }
+    
+    
     private double[] calcTargetQuaternion(double[] current_pos,double ar_pixel_x,double ar_pixel_z){
         //ターゲットの姿勢を算出
+        //Calculating the optimal quaternions to orientate Astrobee to irradiate the center of the target
         double nav_center_x = 640;
         double nav_center_z = 480;
         double current_position_y = current_pos[1];
@@ -134,8 +154,11 @@ public class YourService extends KiboRpcService {
         double[] ans = {zy_quaternion_x_and_y,zy_quaternion_x_and_y,yx_quaternion_z,yx_quaternion_w};
         return ans;
     }
+    
+    
     private boolean readARmarker(Bitmap bitmap,double[] current_pos, boolean needSend) {
         //ARマーカーの読み取り
+        //Detecting and scanning the AR tag
         bitmap = undistortImage(bitmap);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -167,8 +190,11 @@ public class YourService extends KiboRpcService {
             return true;
         }
     }
+    
+    
     private void getQRcode(int QR_num){
         //QRコードへの移動と読み取り
+        //Initiate QR code detection and scanning
         int loop_count = 0;
         String QRcodeString = "error";
         while(QRcodeString.equals("error") && loop_count < 20){
@@ -191,11 +217,16 @@ public class YourService extends KiboRpcService {
         api.judgeSendDiscoveredQR(QR_num,QRcodeString);
         String[] strings = QRcodeString.split(",");
     }
+    
+    
     private String readQRcode(int QR_num,Bitmap bitmap) {
         //撮影した画像を加工して、QRコードを読み取る
+        //Detecting and scanning the QR code
         String result = "error";
         double n = 0;
         double m = 0;
+        //QR codeの画像の縮小と切り取り
+        //Determining the QR code reduction ratio
         if(QR_num == 1){
             n = 0.5;
             m = 0.5;
@@ -228,10 +259,13 @@ public class YourService extends KiboRpcService {
         }
         return result;
     }
+    
+    
     private void moveToWrapper(double pos_x,double pos_y,double pos_z,
                                double qua_x,double qua_y,double qua_z,
                                double qua_w){
         //指定した座標に移動させる
+        //Move and orientate Astrobee to a specific coordinate and quaternion
         final int LOOP_MAX = 20;
         final Point point = new Point(pos_x,pos_y,pos_z);
         final Quaternion quaternion = new Quaternion((float)qua_x,(float)qua_y,
@@ -253,8 +287,11 @@ public class YourService extends KiboRpcService {
             }
         }while(!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
+    
+    
     private void moveToQR(int QR_num) {
         //指定したQRコードに移動させる
+        //Move Astrobee to the QR code
         double pos_table[][] = {{10.71, -5.59, 4.52, 0, 0, 1, 0},
                 {11.16, -7.98, 5.47, 0.5, 0.5, -0.5, 0.5}};
         Point point = new Point(pos_table[QR_num][0], pos_table[QR_num][1], pos_table[QR_num][2]);
@@ -288,10 +325,13 @@ public class YourService extends KiboRpcService {
             }
         } while (!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
+   
+    
     private void relativeMoveToWrapper(double pos_x,double pos_y,double pos_z,
                                        double qua_x,double qua_y,double qua_z,
                                        double qua_w){
         //指定した相対的な座標に移動させる
+        //Move to the coordinates relative to Astrobee (and orientate)
         final int LOOP_MAX = 20;
         final Point point = new Point(pos_x,pos_y,pos_z);
         final Quaternion quaternion = new Quaternion((float)qua_x,(float)qua_y,
@@ -303,15 +343,21 @@ public class YourService extends KiboRpcService {
             loop_count++;
         }while(!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
+    
+    
     private void sleep(int millis){
         //Astrobeeを停止させる
+        //Stopping Astrobee for __ milliseconds
         try {
             Thread.sleep(millis);
         }catch(InterruptedException e){
         }
     }
+    
+    
     private Point getPositionWrapper(double def_pos_x,double def_pos_y,double def_pos_z){
         //現在位置を取得する
+        //Acquiring the real-time data for Astrobee’s orientation and coordinates
         int timeout_sec = 10;
         Kinematics kinematics = api.getTrustedRobotKinematics(timeout_sec);
         Point ans_point = null;
