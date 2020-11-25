@@ -1,5 +1,5 @@
 package jp.jaxa.iss.kibo.rpc.japan;
-import android.graphics.Bitmap;
+
 import org.opencv.calib3d.Calib3d;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
@@ -7,20 +7,27 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import static org.opencv.android.Utils.bitmapToMat;
+import static org.opencv.android.Utils.matToBitmap;
+import static org.opencv.core.CvType.CV_32FC1;
+import static org.opencv.core.CvType.CV_64F;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import gov.nasa.arc.astrobee.Kinematics;
 import gov.nasa.arc.astrobee.Result;
 import gov.nasa.arc.astrobee.types.Point;
 import gov.nasa.arc.astrobee.types.Quaternion;
 import jp.jaxa.iss.kibo.rpc.api.KiboRpcService;
+
 import static android.graphics.Bitmap.createBitmap;
-import static org.opencv.android.Utils.bitmapToMat;
-import static org.opencv.android.Utils.matToBitmap;
-import static org.opencv.core.CvType.CV_32FC1;
-import static org.opencv.core.CvType.CV_64F;
+import android.graphics.Bitmap;
+
 public class YourService extends KiboRpcService {
+    
+    
     @Override
     protected void runPlan1(){
         //U1 P2付近から移動開始するプログラム
@@ -34,6 +41,8 @@ public class YourService extends KiboRpcService {
         getARmarker(current_pos);
         api.judgeSendFinishISS();
     }
+    
+    
     @Override
     protected void runPlan2(){
         //U2 P3手前から移動開始するプログラム
@@ -46,6 +55,8 @@ public class YourService extends KiboRpcService {
         getARmarker(current_pos);
         api.judgeSendFinishISS();
     }
+    
+    
     private void getARmarker(double[] current_pos){
         //ARマーカーの取得からレーザーの照射まで
         int loop_count = 0;
@@ -68,6 +79,8 @@ public class YourService extends KiboRpcService {
             loop_count ++;
         } while(!isSucceeded && loop_count < 50);
     }
+    
+    
     private Bitmap undistortImage(Bitmap input_bitmap){
         //撮影した画像の歪み補正
         Mat input_mat = new Mat();
@@ -102,6 +115,8 @@ public class YourService extends KiboRpcService {
         matToBitmap(undistorted_mat,output_bitmap);
         return output_bitmap;
     }
+    
+    
     private double[] calcTargetQuaternion(double[] current_pos,double ar_pixel_x,double ar_pixel_z){
         //ターゲットの姿勢を算出する
         double nav_center_x = 640;
@@ -133,6 +148,8 @@ public class YourService extends KiboRpcService {
         double[] ans = {zy_quaternion_x_and_y,zy_quaternion_x_and_y,yx_quaternion_z,yx_quaternion_w};
         return ans;
     }
+    
+    
     private boolean readARmarker(Bitmap bitmap,double[] current_pos, boolean needSend) {
         //ARマーカーの読み取り
         bitmap = undistortImage(bitmap);
@@ -166,6 +183,8 @@ public class YourService extends KiboRpcService {
             return true;
         }
     }
+    
+    
     private void moveToWrapper(double pos_x,double pos_y,double pos_z,
                                double qua_x,double qua_y,double qua_z,
                                double qua_w){
@@ -191,6 +210,8 @@ public class YourService extends KiboRpcService {
             }
         }while(!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
+    
+    
     private void relativeMoveToWrapper(double pos_x,double pos_y,double pos_z,
                                        double qua_x,double qua_y,double qua_z,
                                        double qua_w){
@@ -206,6 +227,8 @@ public class YourService extends KiboRpcService {
             loop_count++;
         }while(!result.hasSucceeded() && loop_count < LOOP_MAX);
     }
+    
+    
     private void sleep(int millis){
         //Astrobeeを停止させる
         try {
@@ -213,6 +236,8 @@ public class YourService extends KiboRpcService {
         }catch(InterruptedException e){
         }
     }
+    
+    
     private Point getPositionWrapper(double def_pos_x,double def_pos_y,double def_pos_z){
         //現在位置を取得する
         int timeout_sec = 10;
