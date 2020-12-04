@@ -211,8 +211,8 @@ public class MainActivity extends AppCompatActivity {
         //UndistortPointを使って歪み補正を試みる
         double camera_matrix[] = {344.173397, 0.000000, 630.793795,
                 0.000000, 344.277922, 487.033834,
-                0.000000, 0.000000, 1.000000};//重要！重要！重要！
-        double distortion_coefficients[] = {-0.152963, 0.017530, -0.001107, -0.000210,0.000000};//重要！重要！重要！
+                0.000000, 0.000000, 1.000000};
+        double distortion_coefficients[] = {-0.152963, 0.017530, -0.001107, -0.000210,0.000000};
 
         /*
 
